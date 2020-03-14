@@ -55,24 +55,23 @@ module dicClockFsm (
         output reg update_alarm,
 
         // old input
-        input      det_cr,
-        input      det_S,      // S/s detected
-		input      rst,//reset key ESC
+        input      det_cr,  // enter key
+        input      det_S,      // S/s key
+		input      rst, //reset key ESC
 		input      clk,
         // new input
-        input       det_L,
-        input       det_A,
-        input       det_atSign,
-        input       det_num0to5,                 
-        input       det_num,
-        input       control_alarm // for trigger state        
+        input       det_L,  // L/l key
+        input       det_A,  // A/a key for alarm
+        input       det_atSign, // enable/disable alarm
+        input       det_num0to5,    // number 0-5                 
+        input       det_num,    // number 0-9
+        input       control_alarm // flag for trigger state        
     );
     
     // new in lab4
-    // we need 5 bits for each state to fulfill all the states
-    // we have some extra states to solve asynchronous and latch issues
-    reg [4:0]  cState; // change to 5-bit to match 5-bit states
-    reg [4:0]  nState; // change to 5-bit to match 5-bit states
+    // need 4 bits for each state to fulfill all the required states
+    reg [3:0]  cState; // change to 4-bit to match 4-bit states
+    reg [3:0]  nState; // change to 4-bit to match 4-bit states
 
     // only 2 states:
     //  RUN: dicRun = 1;  dicDspMtens = 1; dicDspMones = 1; dicDspStens = 1; dicDspSones= 1;
@@ -80,46 +79,26 @@ module dicClockFsm (
     localparam
     //STOP    =1'b0, 
     //RUN     =1'b1,
-    STOP = 5'b00000,
-    RUN = 5'b00001,
+    STOP = 4'b0000,
+    RUN = 4'b0001,
     // load_time states
-    LOAD_TIME_1 = 5'b00010,
-    LOAD_TIME_2 = 5'b00011,
-    LOAD_TIME_3 = 5'b00100,
-    LOAD_TIME_4 = 5'b00101,
-    LOAD_TIME_5 = 5'b00110,
-    
-    EXTRA_STATE_TIME_1 = 5'b00111,
-    EXTRA_STATE_TIME_2 = 5'b01000,
-    EXTRA_STATE_TIME_3 = 5'b01001,
-    EXTRA_STATE_TIME_4 = 5'b01010,
-    EXTRA_STATE_TIME_5 = 5'b01011,
+    LOAD_TIME_1 = 4'b0010,
+    LOAD_TIME_2 = 4'b0011,
+    LOAD_TIME_3 = 4'b0100,
+    LOAD_TIME_4 = 4'b0101,
+    LOAD_TIME_5 = 4'b0110,
     
     // load_alarm states
-    LOAD_ALARM_1 = 5'b01100,
-    LOAD_ALARM_2 = 5'b01101,
-    LOAD_ALARM_3 = 5'b01110,
-    LOAD_ALARM_4 = 5'b01111,
-    LOAD_ALARM_5 = 5'b10000,
-    
-    EXTRA_STATE_ALARM_1 = 5'b10001,
-    EXTRA_STATE_ALARM_2 = 5'b10010,
-    EXTRA_STATE_ALARM_3 = 5'b10011,
-    EXTRA_STATE_ALARM_4 = 5'b10100,
-    EXTRA_STATE_ALARM_5 = 5'b10101,
+    LOAD_ALARM_1 = 4'b0111,
+    LOAD_ALARM_2 = 4'b1000,
+    LOAD_ALARM_3 = 4'b1001,
+    LOAD_ALARM_4 = 4'b1010,
+    LOAD_ALARM_5 = 4'b1011,
     
     // alarm states
-    ACTIVATE_ALARM = 5'b10110,
-    DEACTIVATE_ALARM = 5'b10111,
-    TRIGGER_ALARM = 5'b11000,
-    
-    EXTRA_STATE_1 = 5'b11001,
-    EXTRA_STATE_2 = 5'b11010,
-    EXTRA_STATE_3 = 5'b11011,
-    EXTRA_STATE_4 = 5'b11100,
-    EXTRA_STATE_5 = 5'b11101;
-                              
-   
+    ACTIVATE_ALARM = 4'b1100,
+    DEACTIVATE_ALARM = 4'b1101,
+    TRIGGER_ALARM = 4'b1110;                       
    
     //
     // state machine next state
@@ -143,21 +122,6 @@ module dicClockFsm (
                     nState = (det_S) ? RUN : ((det_L) ? LOAD_TIME_1 : ((det_A) ? LOAD_ALARM_1 : ((det_atSign) ? ACTIVATE_ALARM : ((control_alarm & update_alarm) ? TRIGGER_ALARM : STOP))));
                 end
                 
-                EXTRA_STATE_TIME_1: 
-                begin
-                end
-                EXTRA_STATE_TIME_2: 
-                begin 
-                end
-                EXTRA_STATE_TIME_3: 
-                begin 
-                end
-                EXTRA_STATE_TIME_4: 
-                begin
-                end
-                EXTRA_STATE_TIME_5: 
-                begin 
-                end
                 LOAD_TIME_1:
                 begin
                     nState = (det_num0to5) ? LOAD_TIME_2 : LOAD_TIME_1;
@@ -179,21 +143,6 @@ module dicClockFsm (
                     nState = (det_cr) ? STOP : ((det_S) ? RUN : ((det_atSign) ? ACTIVATE_ALARM : LOAD_TIME_5));
                 end
                 
-                EXTRA_STATE_ALARM_1: 
-                begin
-                end
-                EXTRA_STATE_ALARM_2: 
-                begin
-                end
-                EXTRA_STATE_ALARM_3: 
-                begin
-                end
-                EXTRA_STATE_ALARM_4: 
-                begin
-                end
-                EXTRA_STATE_ALARM_5: 
-                begin
-                end
                 LOAD_ALARM_1:
                 begin
                     nState = (det_num0to5) ? LOAD_ALARM_2 : ((det_atSign) ? ACTIVATE_ALARM : LOAD_ALARM_1);
@@ -229,22 +178,6 @@ module dicClockFsm (
                 begin
                     nState = (det_atSign) ? DEACTIVATE_ALARM : ((det_A) ? LOAD_ALARM_1 : TRIGGER_ALARM);
                 end
-                
-                EXTRA_STATE_1: 
-                begin
-                end 
-                EXTRA_STATE_2: 
-                begin
-                end 
-                EXTRA_STATE_3: 
-                begin
-                end 
-                EXTRA_STATE_4: 
-                begin
-                end 
-                EXTRA_STATE_5: 
-                begin
-                end 
 
                 default :
                     nState = STOP;

@@ -49,12 +49,12 @@ module Lab4_140L (
         
         // new variables
         output wire l_oneSecPluse,
-        output wire dicRun,
-        output wire alarm_state,
+        output wire dicRun, // middle led to specify clock is running or not
+        output wire alarm_state,    // state of alarm: activate/deactivate
         output wire update_alarm,
-        output wire trigger_alarm,  // on/off trigger alarm state
-        output wire control_alarm,
-        output wire activate_alarm
+        output wire trigger_alarm,  // alarm is triggered (1/0)
+        output wire control_alarm,  // 
+        output wire activate_alarm  // 
     );
     wire[7:0] rx_data;
     wire rx_data_rdy;
@@ -183,12 +183,12 @@ module Lab4_140L (
     
     assign control_alarm = (alarm_state & ~|(di_Mtens ^ di_AMtens) & ~|(di_Mones ^ di_AMones) & ~|(di_Stens ^ di_AStens) & ~|(di_Sones ^ di_ASones) ) ? 1'b1 : 1'b0;
     
-    wire [7:0] AMtens = (dic_ADspMtens) ? bcd_AMtens : "-";
-    wire [7:0] AMones = (dic_ADspMones) ? bcd_AMones : "-";
-    wire [7:0] AStens = (dic_ADspStens) ? bcd_AStens : "-";
-    wire [7:0] ASones = (dic_ADspSones) ? bcd_ASones : "-";
-    wire [7:0] AColon = (dic_ADspMones) ? ":" : "-";
-    wire [7:0] AChar = (trigger_alarm) ? "T" : ((alarm_state) ? "@" : "-");
+    wire [7:0] alarm_AMtens = (dic_ADspMtens) ? bcd_AMtens : "-";
+    wire [7:0] alarm_AMones = (dic_ADspMones) ? bcd_AMones : "-";
+    wire [7:0] alarm_AStens = (dic_ADspStens) ? bcd_AStens : "-";
+    wire [7:0] alarm_ASones = (dic_ADspSones) ? bcd_ASones : "-";
+    wire [7:0] alarm_colon = (dic_ADspMones) ? ":" : "-";
+    wire [7:0] alarm_status = (trigger_alarm) ? "T" : ((alarm_state) ? "@" : "-");
     
 
     //wire [7:0] my_b2 = (alarm ctr_sign) ? number:
@@ -197,12 +197,12 @@ module Lab4_140L (
 		  .rdy(L4_tx_data_rdy)
         , .dOut(L4_tx_data)
 		, .b0("A") 
-		, .b1(AMtens)
-		, .b2(AMones)
-		, .b3(AColon) // :
-		, .b4(AStens) 
-		, .b5(ASones)
-        , .b6(AChar) // T, @, -
+		, .b1(alarm_AMtens)
+		, .b2(alarm_AMones)
+		, .b3(alarm_colon) // :
+		, .b4(alarm_AStens) 
+		, .b5(alarm_ASones)
+        , .b6(alarm_status) // T, @, -
 		, .b7(8'h0d)		
 		, .go(l_oneSecStrb | l_oneSecPluse)	
 		, .rst(rst)

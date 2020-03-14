@@ -146,6 +146,7 @@ module ledDisplay (
 			.ce(dicSelectLEDdisp), .rst(rst), .clk(clk));
 
     assign L4_led = 
+        (trigger_alarm) ? {oneSecPluse, oneSecPluse, oneSecPluse, oneSecPluse, oneSecPluse} :
         (~|(selLed ^ 2'b00)) ? {oneSecPluse, di_Sones} :
         (~|(selLed ^ 2'b01)) ? {oneSecPluse, di_Stens} :
         (~|(selLed ^ 2'b10)) ? {oneSecPluse, di_Mones} :
